@@ -14,7 +14,7 @@ class MysqlError extends TypeError {
     }
 }
 
-MysqlError.err_msg = {
+const ERROR_MSG = {
     mysql_condition_error: "查询条件出错",
     mysql_no_table: "mysql不存在table",
     mysql_filter_problem: "mysql_filter_problem",
@@ -68,7 +68,7 @@ class Mysql {
     generateSql(table, equal_condition, like_condition, data_param_arr) {
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "select ";
@@ -98,7 +98,7 @@ class Mysql {
                 {
                     sql += i + " = " + mysql.escape(equal_condition[i]) + " and ";
                 } else{
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
             }
 
@@ -106,7 +106,7 @@ class Mysql {
             {
                 if (typeof (like_condition[i]) !== "string")
                 {
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
 
                 let temp_sub_sql = "%" + like_condition[i].replace(/\\/g, "\\\\") + "%";
@@ -122,7 +122,7 @@ class Mysql {
     generateCountSql(table, equal_condition, like_condition) {
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "select count(*) from " + table + " where ";
@@ -139,7 +139,7 @@ class Mysql {
                 {
                     sql += i + " = " + mysql.escape(equal_condition[i]) + " and ";
                 } else{
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
             }
 
@@ -147,7 +147,7 @@ class Mysql {
             {
                 if (typeof (like_condition[i]) !== "string")
                 {
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
 
                 let temp_sub_sql = "%" + like_condition[i].replace(/\\/g, "\\\\") + "%";
@@ -207,7 +207,7 @@ class Mysql {
     awaitGetCount(table, equal_condition, like_condition) {
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_param_undefined);
+            throw new MysqlError(ERROR_MSG.mysql_param_undefined);
         }
 
         let sql = "select count(*) from " + table + " where ";
@@ -224,7 +224,7 @@ class Mysql {
                 {
                     sql += i + " = " + mysql.escape(equal_condition[i]) + " and ";
                 } else{
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
             }
 
@@ -232,7 +232,7 @@ class Mysql {
             {
                 if (typeof (like_condition[i]) !== "string")
                 {
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
 
                 let temp_sub_sql = "%" + like_condition[i].replace(/\\/g, "\\\\") + "%";
@@ -286,7 +286,7 @@ class Mysql {
     awaitSelectDB(table, equal_condition, like_condition, data_param_arr, desc_param_str, page_obj) { //pid
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "select ";
@@ -316,7 +316,7 @@ class Mysql {
                 {
                     sql += i + " = " + mysql.escape(equal_condition[i]) + " and ";
                 } else{
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
             }
 
@@ -324,7 +324,7 @@ class Mysql {
             {
                 if (typeof (like_condition[i]) !== "string")
                 {
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
 
                 let temp_sub_sql = "%" + like_condition[i].replace(/\\/g, "\\\\") + "%";
@@ -365,7 +365,7 @@ class Mysql {
     awaitUpdateDB(table, condition , set) {
         if(typeof (table) !== "string" || typeof(condition) !== "object" || typeof(set) !== "object" || Object.keys(set).length === 0)//如果condtion的长度为0则where 1 = 1
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "UPDATE " + table + " SET ";
@@ -382,7 +382,7 @@ class Mysql {
                 if(type === "string" || type === "number") {
                     sql += i + "=" + mysql.escape(condition[i]) + " and ";
                 } else {
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
             }
             sql = sql.substr(0, sql.length - 5);
@@ -412,12 +412,12 @@ class Mysql {
     awaitInsertDB(table, data_object, is_ignore) {
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         if(typeof(data_object) !== "object" || Object.keys(data_object).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let key = "";
@@ -430,7 +430,7 @@ class Mysql {
                 key += "`" + i + "`,";
                 value +=  mysql.escape(data_object[i]) + ",";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -467,12 +467,12 @@ class Mysql {
     awaitInsertAndGetID(table, data_object) {
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         if(typeof(data_object) !== "object" || Object.keys(data_object).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let key = "";
@@ -485,7 +485,7 @@ class Mysql {
                 key += "`" + i + "`,";
                 value +=  mysql.escape(data_object[i]) + ",";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -516,12 +516,12 @@ class Mysql {
     awaitInsertOrUpdateByUniqueKey(table, primary_key, set) {
         if(typeof table !== "string" || typeof primary_key !== "object" || typeof set !== "object")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         if(Object.keys(primary_key).length === 0 || Object.keys(set).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "INSERT INTO " + table + " ";
@@ -535,7 +535,7 @@ class Mysql {
                 key += "`" + i + "`,";
                 value += mysql.escape(primary_key[i]) + ",";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -547,7 +547,7 @@ class Mysql {
                 value += mysql.escape(set[i]) + ",";
                 update += i + "=" + mysql.escape(set[i]) + " AND ";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -579,7 +579,7 @@ class Mysql {
     awaitDeleteDB(table, condition) {
         if(typeof (table) !== "string" || typeof (condition) !== "object" || Object.keys(condition).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "DELETE FROM " + table + " where ";
@@ -588,7 +588,7 @@ class Mysql {
             if(typeof (condition[i]) === "string" || typeof (condition[i]) === "number") {
                 sql = sql + i + "=" + mysql.escape(condition[i]) + " and ";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
         sql = sql.substr(0, sql.length - 5);
@@ -616,7 +616,7 @@ class Mysql {
     awaitReplaceDB(table, condition) {
         if(typeof table !== "string" || typeof condition !== "object" || Object.keys(condition).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let key = "(";
@@ -626,7 +626,7 @@ class Mysql {
                 key +=  i + ',';
                 value += mysql.escape(condition[i]) + ",";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -686,7 +686,7 @@ class Mysql {
     selectDB(table, equal_condition, like_condition, data_param_arr, desc_param_str, callback) {
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "select ";
@@ -716,7 +716,7 @@ class Mysql {
                 {
                     sql += i + " = " + mysql.escape(equal_condition[i]) + " and ";
                 } else{
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
             }
 
@@ -724,7 +724,7 @@ class Mysql {
             {
                 if (typeof (like_condition[i]) !== "string")
                 {
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
 
                 let temp_sub_sql = "%" + like_condition[i].replace(/\\/g, "\\\\") + "%";
@@ -756,7 +756,7 @@ class Mysql {
     updateDB(table, condition, set, callback) {
         if(typeof (table) !== "string" || typeof(condition) !== "object" || typeof(set) !== "object" || Object.keys(set).length === 0)//如果condtion的长度为0则where 1 = 1
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "UPDATE " + table + " SET ";
@@ -773,7 +773,7 @@ class Mysql {
                 if(type === "string" || type === "number") {
                     sql += i + "=" + mysql.escape(condition[i]) + " and ";
                 } else {
-                    throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
                 }
             }
             sql = sql.substr(0, sql.length - 5);
@@ -796,12 +796,12 @@ class Mysql {
     insertDB(table, data_object, is_ignore, callback) {
         if(typeof (table) !== "string")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         if(typeof(data_object) !== "object" || Object.keys(data_object).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let key = "";
@@ -814,7 +814,7 @@ class Mysql {
                 key += i + ",";
                 value +=  mysql.escape(data_object[i]) + ",";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -845,12 +845,12 @@ class Mysql {
     InsertOrUpdateByUniqueKey(table, primary_key, set, callback) {
         if(typeof table !== "string" || typeof primary_key !== "object" || typeof set !== "object")
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         if(Object.keys(primary_key).length === 0 || Object.keys(set).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "INSERT INTO " + table + " ";
@@ -864,7 +864,7 @@ class Mysql {
                 key +=  i + ',';
                 value += mysql.escape(primary_key[i]) + ",";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -876,7 +876,7 @@ class Mysql {
                 value += mysql.escape(set[i]) + ",";
                 update += i + "=" + mysql.escape(set[i]) + ",";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
 
@@ -903,7 +903,7 @@ class Mysql {
     deleteDB(table, condition, callback) {
         if(typeof (table) !== "string"  || typeof (condition) !== "object" || Object.keys(condition).length === 0)
         {
-            throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
         }
 
         let sql = "DELETE FROM " + table + " where ";
@@ -912,7 +912,7 @@ class Mysql {
             if(typeof (condition[i]) === "string" || typeof (condition[i]) === "number") {
                 sql = sql + i + "=" + mysql.escape(condition[i]) + " and ";
             } else {
-                throw new MysqlError(MysqlError.err_msg.mysql_condition_error);
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
             }
         }
         sql = sql.substr(0, sql.length - 5);
