@@ -1,3 +1,7 @@
+# 项目介绍
+- chipsjs-mysql is a promise-based Node.js ORM for MySQL.
+- 一个未成熟的orm,可以通过传日志模块自定义log,默认使用console.log
+
 # 安装步骤
 - npm install chipsjs-mysql
 
@@ -7,4 +11,3 @@
 - 魔法数字你可以把 and 放到一个配置里，比如
       str = ' and '
       length = str.length
-- 独立的一个对象存储信息
