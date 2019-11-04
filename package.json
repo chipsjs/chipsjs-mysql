@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/chipsjs/chipsjs-utils/issues"
   },
-  "homepage": "https://github.com/chipsjs/chipsjs-utils#readme"
+  "homepage": "https://github.com/chipsjs/chipsjs-utils#readme",
+  "devDependencies": {
+    "eslint": "^6.6.0"
+  }
 }

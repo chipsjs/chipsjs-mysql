@@ -168,28 +168,8 @@ class Mysql {
         return sql;
     };
 
-    async commonWithParam(sql_str, values) {
-        this._log.debug("Mysql.commonWithParam:sqlString is " + sql_str + "; values are " + values);
 
-        return new Promise(( resolve, reject ) => {
-            this._pool.getConnection(function(err, connection) {
-                if (err) {
-                    reject( err )
-                } else {
-                    connection.query(sql_str, values,  ( err, rows) => {
-                        if ( err ) {
-                            reject( err )
-                        } else {
-                            resolve( rows )
-                        }
-                        // 结束会话
-                        connection.release()
-                    })
-                }
-            })
-        });
-    };
-    async commonWithoutParam(sql_str) {
+    async commonExcute(sql_str, values = []) {
         this._log.debug("Mysql.awaitCommonWithoutParam:sqlString is " + sql_str);
 
         return new Promise(( resolve, reject ) => {
@@ -197,7 +177,12 @@ class Mysql {
                 if (err) {
                     reject( err )
                 } else {
-                    connection.query(sql_str,  ( err, rows) => {
+                    let content = {
+                        sql: sql_str
+                    }
+                    if(Array.isArray(values) && values.length !== 0) content.values = values;
+
+                    connection.query(content,  ( err, rows) => {
                         if ( err ) {
                             reject( err )
                         } else {
@@ -209,7 +194,7 @@ class Mysql {
                 }
             })
         });
-    };
+    }
     async getCount({table, equal_condition = {}, like_condition = {}}) {
         this._typeCheck({table, equal_condition, like_condition});
 
