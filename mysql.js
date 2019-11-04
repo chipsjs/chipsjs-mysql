@@ -9,89 +9,94 @@ const mysql = require('mysql');
 
 //是否加上命名空间更合适一些？
 const ERROR_MSG = {
-    mysql_condition_error: "查询条件出错",
+    mysql_condition_error: "mysql condition error",
     mysql_no_table: "mysql不存在table",
     mysql_filter_problem: "mysql_filter_problem",
     mysql_param_undefined: "mysql_param_undefined",
 };
 
-let sql = {
-  and: " and "
-};
-
 class MysqlError extends TypeError {
     constructor (message) {
         super(message);
-        this.type = "Chipsjs_Mysql_Error";
+        this.type = "Mysql_Error";
     }
 }
 
 class Mysql {
     constructor() {
-        this.Log = console;
+        this._log = console;
+    }
+
+    static getInstance() {
+        if(!this.instance) {
+            this.instance = new Mysql();
+        }
+
+        return this.instance;
     }
 
     async _init() {
-        this.pool = mysql.createPool({
+        this._pool = mysql.createPool({
             host: this._host,
             user: this._user,
             password: this._password,
             charset: this._charset,
             database: this._database,
-            dateStrings: this._data_string
+            dateStrings: this._date_string
         });
 
-        this.Log.info("mysql: 连接mysql中...");
-        this.pool.on('connection', function (connection) {
-            this.Log.info("mysql: 新建mysql连接成功并加入连接池");
+        this._log.info("mysql: connect mysql...");
+        this._pool.on('connection', function (connection) {
+            this._log.info("mysql: connect mysql success!!!");
             connection.query('SET SESSION auto_increment_increment=1')
         });
-        this.pool.on('error', function (err) {
-            this.Log.error("mysql: " + err);
+        this._pool.on('error', function (err) {
+            this._log.error("mysql: " + err);
         });
     }
 
-    async init(mysql_info, user_log_module) {
-        this._host = mysql_info.host;
-        this._user = mysql_info.user;
-        this._password = mysql_info.password;
-        this._charset = mysql_info.charset;
-        this._database = mysql_info.database;
-        this._data_string = mysql_info.data_string;
+    async _typeCheck(obj) {
+        if(typeof obj !== "object" || typeof obj.table !== "string" || typeof obj.equal_condition !== "object" || typeof obj.like_condition !== "object") {
+            throw new MysqlError(ERROR_MSG.mysql_condition_error);
+        }
+    }
+
+    async init({host = "127.0.0.1", user = "root", password = "", charset = "utf8", database = "test", date_string = "true"}, user_log_module) {
+        this._host = host;
+        this._user = user;
+        this._password = password;
+        this._charset = charset;
+        this._database = database;
+        this._date_string = date_string; //Force date types (TIMESTAMP, DATETIME, DATE) to be returned as strings rather than inflated into JavaScript Date objects. Can be true/false or an array of type names to keep as strings. (Default: false)
 
         if(typeof user_log_module === "object" && typeof user_log_module.info === "function" && typeof user_log_module.debug === "function" && typeof user_log_module.error === "function") {
-            this.Log = user_log_module;
+            this._log = user_log_module;
+        } else {
+            this._log.error("this log module introduced has no info/debug/error function");
         }
 
-       await this._init();
+        await this._init();
     };
 
     static escape(sql){
         return mysql.escape(sql);
     };
-
-    generateSql(table, equal_condition, like_condition, data_param_arr) {
-        if(typeof (table) !== "string")
-        {
-            throw new MysqlError(ERROR_MSG.mysql_condition_error);
-        }
+    async generateSql({table, equal_condition = {}, like_condition = {}}, data_param_arr) {
+        this._typeCheck({table, equal_condition, like_condition});
 
         let sql = "select ";
-        if(typeof(data_param_arr) !== "object" || Object.keys(data_param_arr).length === 0)
-        {
-            sql += "* "
-        } else
-        {
+        if(Array.isArray(data_param_arr) === true) {
             for(let i in data_param_arr)
             {
                 sql += data_param_arr[i] + ", "
             }
             sql = sql.substr(0, sql.length - 2);
+        } else {
+            sql += "* "
         }
-
         sql += " from " + table + " where ";
 
-        if( (typeof(equal_condition) !== "object" || Object.keys(equal_condition).length === 0) && (typeof(like_condition) !== "object"  || Object.keys(like_condition).length === 0))
+        if( (Object.keys(equal_condition).length === 0) && (Object.keys(like_condition).length === 0))
         {
             sql += " 1=1";
         } else
@@ -124,15 +129,12 @@ class Mysql {
 
         return sql;
     };
-    generateCountSql(table, equal_condition, like_condition) {
-        if(typeof (table) !== "string")
-        {
-            throw new MysqlError(ERROR_MSG.mysql_condition_error);
-        }
+    async generateCountSql({table, equal_condition = {}, like_condition = {}}) {
+        this._typeCheck({table, equal_condition, like_condition});
 
         let sql = "select count(*) from " + table + " where ";
 
-        if( (typeof(equal_condition) !== "object" || Object.keys(equal_condition).length === 0) && (typeof(like_condition) !== "object"  || Object.keys(like_condition).length === 0))
+        if((Object.keys(equal_condition).length === 0) && (Object.keys(like_condition).length === 0))
         {
             sql += " 1=1";
         } else
@@ -166,11 +168,11 @@ class Mysql {
         return sql;
     };
 
-    commonWithParam(sql_str, values) {
-        this.Log.debug("Mysql.commonWithParam:sqlString is " + sql_str + "; values are " + values);
+    async commonWithParam(sql_str, values) {
+        this._log.debug("Mysql.commonWithParam:sqlString is " + sql_str + "; values are " + values);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -187,11 +189,11 @@ class Mysql {
             })
         });
     };
-    commonWithoutParam(sql_str) {
-        this.Log.debug("Mysql.awaitCommonWithoutParam:sqlString is " + sql_str);
+    async commonWithoutParam(sql_str) {
+        this._log.debug("Mysql.awaitCommonWithoutParam:sqlString is " + sql_str);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -208,15 +210,12 @@ class Mysql {
             })
         });
     };
-    getCount(table, equal_condition, like_condition) {
-        if(typeof (table) !== "string")
-        {
-            throw new MysqlError(ERROR_MSG.mysql_param_undefined);
-        }
+    async getCount({table, equal_condition = {}, like_condition = {}}) {
+        this._typeCheck({table, equal_condition, like_condition});
 
         let sql = "select count(*) from " + table + " where ";
 
-        if( (typeof(equal_condition) !== "object" || Object.keys(equal_condition).length === 0) && (typeof(like_condition) !== "object"  || Object.keys(like_condition).length === 0))
+        if((Object.keys(equal_condition).length === 0) && (Object.keys(like_condition).length === 0))
         {
             sql += " 1=1";
         } else
@@ -246,10 +245,10 @@ class Mysql {
             sql = sql.substr(0, sql.length - 5);
         }
 
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -266,11 +265,11 @@ class Mysql {
             })
         })
     };
-    getCountWithSql(sql_str) {
+    async getCountWithSql(sql_str) {
         this.debug("Mysql.awaitGetCountWithSql:sql_str is " + sql_str);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -287,7 +286,9 @@ class Mysql {
             })
         });
     };
-    selectDB(table, equal_condition, like_condition, data_param_arr, desc_param_str, page_obj) { //pid
+
+    //need to optimize
+    async selectDB(table, equal_condition, like_condition, data_param_arr, desc_param_str, page_obj) { //pid
         if(typeof (table) !== "string")
         {
             throw new MysqlError(ERROR_MSG.mysql_condition_error);
@@ -346,10 +347,10 @@ class Mysql {
             sql += " limit " + page_obj.start_index + ", " + page_obj.page_size;
         }
 
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -366,7 +367,7 @@ class Mysql {
             })
         });
     };
-    updateDB(table, condition , set) {
+    async updateDB(table, condition , set) {
         if(typeof (table) !== "string" || typeof(condition) !== "object" || typeof(set) !== "object" || Object.keys(set).length === 0)//如果condtion的长度为0则where 1 = 1
         {
             throw new MysqlError(ERROR_MSG.mysql_condition_error);
@@ -392,10 +393,10 @@ class Mysql {
             sql = sql.substr(0, sql.length - 5);
         }
 
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -413,7 +414,7 @@ class Mysql {
             })
         })
     };
-    insertDB(table, data_object, is_ignore) {
+    async insertDB(table, data_object, is_ignore) {
         if(typeof (table) !== "string")
         {
             throw new MysqlError(ERROR_MSG.mysql_condition_error);
@@ -448,10 +449,10 @@ class Mysql {
             sql = "INSERT INTO " + table + " (" + key + ") VALUES (" + value + ")";
         }
 
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -468,7 +469,7 @@ class Mysql {
             })
         })
     };
-    insertAndGetID(table, data_object) {
+    async insertAndGetID(table, data_object) {
         if(typeof (table) !== "string")
         {
             throw new MysqlError(ERROR_MSG.mysql_condition_error);
@@ -497,10 +498,10 @@ class Mysql {
         value = value.substr(0, value.length - 1);
 
         let sql = "INSERT INTO " + table + " (" + key + ") VALUES (" + value + ")";
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -517,7 +518,7 @@ class Mysql {
             })
         })
     };
-    insertOrUpdateByUniqueKey(table, primary_key, set) {
+    async insertOrUpdateByUniqueKey(table, primary_key, set) {
         if(typeof table !== "string" || typeof primary_key !== "object" || typeof set !== "object")
         {
             throw new MysqlError(ERROR_MSG.mysql_condition_error);
@@ -561,10 +562,10 @@ class Mysql {
         update = update.substr(0, update.length - 5);//del the last '' and'
 
         sql = sql + key + " VALUES " + value + " ON DUPLICATE KEY UPDATE " + update;
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -580,7 +581,7 @@ class Mysql {
             })
         })
     };
-    deleteDB(table, condition) {
+    async deleteDB(table, condition) {
         if(typeof (table) !== "string" || typeof (condition) !== "object" || Object.keys(condition).length === 0)
         {
             throw new MysqlError(ERROR_MSG.mysql_condition_error);
@@ -597,10 +598,10 @@ class Mysql {
         }
         sql = sql.substr(0, sql.length - 5);
 
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -617,7 +618,7 @@ class Mysql {
             })
         })
     };
-    replaceDB(table, condition) {
+    async replaceDB(table, condition) {
         if(typeof table !== "string" || typeof condition !== "object" || Object.keys(condition).length === 0)
         {
             throw new MysqlError(ERROR_MSG.mysql_condition_error);
@@ -638,10 +639,10 @@ class Mysql {
         value = value.substr(0, value.length -1) + ")";//del the last ','
 
         let sql = "REPLACE INTO " + table + " " + key + " VALUES " + value;
-        this.Log.debug(sql);
+        this._log.debug(sql);
 
         return new Promise(( resolve, reject ) => {
-            this.pool.getConnection(function(err, connection) {
+            this._pool.getConnection(function(err, connection) {
                 if (err) {
                     reject( err )
                 } else {
@@ -657,7 +658,7 @@ class Mysql {
             })
         })
     };
-};
+}
 
 
 module.exports = Mysql;
