@@ -24,7 +24,6 @@ class MysqlError extends TypeError {
 
 class Mysql {
     constructor() {
-        this._log = console;
     }
 
     static getInstance() {
@@ -37,22 +36,24 @@ class Mysql {
 
     async _init() {
         this._pool = mysql.createPool({
+            port: this._port,
             host: this._host,
             user: this._user,
             password: this._password,
             charset: this._charset,
             database: this._database,
-            dateStrings: this._date_string
+            dateStrings: this._date_string,
+            connectionLimit: this._connection_limit_num
         });
 
         this._log.info("mysql: connect mysql...");
         this._pool.on('connection', function (connection) {
             this._log.info("mysql: connect mysql success!!!");
             connection.query('SET SESSION auto_increment_increment=1')
-        });
+        }.bind(this));
         this._pool.on('error', function (err) {
             this._log.error("mysql: " + err);
-        });
+        }.bind(this));
     }
 
     async _typeCheck(obj) {
@@ -61,13 +62,15 @@ class Mysql {
         }
     }
 
-    async init({host = "127.0.0.1", user = "root", password = "", charset = "utf8", database = "test", date_string = "true"}, user_log_module) {
+    async init({host = "127.0.0.1", port = 3306, user = "root", password = "", charset = "utf8", database = "test", date_string = "true", connection_limit_num = 10}, user_log_module = console) {
         this._host = host;
+        this._port = port;
         this._user = user;
         this._password = password;
         this._charset = charset;
         this._database = database;
         this._date_string = date_string; //Force date types (TIMESTAMP, DATETIME, DATE) to be returned as strings rather than inflated into JavaScript Date objects. Can be true/false or an array of type names to keep as strings. (Default: false)
+        this._connection_limit_num = connection_limit_num;
 
         if(typeof user_log_module === "object" && typeof user_log_module.info === "function" && typeof user_log_module.debug === "function" && typeof user_log_module.error === "function") {
             this._log = user_log_module;
@@ -168,7 +171,6 @@ class Mysql {
         return sql;
     };
 
-
     async commonExcute(sql_str, values = []) {
         this._log.debug("Mysql.awaitCommonWithoutParam:sqlString is " + sql_str);
 
@@ -179,7 +181,7 @@ class Mysql {
                 } else {
                     let content = {
                         sql: sql_str
-                    }
+                    };
                     if(Array.isArray(values) && values.length !== 0) content.values = values;
 
                     connection.query(content,  ( err, rows) => {
@@ -251,7 +253,7 @@ class Mysql {
         })
     };
     async getCountWithSql(sql_str) {
-        this.debug("Mysql.awaitGetCountWithSql:sql_str is " + sql_str);
+        this._log.debug("Mysql.awaitGetCountWithSql:sql_str is " + sql_str);
 
         return new Promise(( resolve, reject ) => {
             this._pool.getConnection(function(err, connection) {
