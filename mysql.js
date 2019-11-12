@@ -172,7 +172,7 @@ class Mysql {
     };
 
     async commonExcute(sql_str, values = []) {
-        this._log.debug("Mysql.awaitCommonWithoutParam:sqlString is " + sql_str);
+        this._log.debug("Mysql.commonExcute:sql is " + sql_str + ", values is " + values);
 
         return new Promise(( resolve, reject ) => {
             this._pool.getConnection(function(err, connection) {
