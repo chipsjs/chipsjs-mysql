@@ -97,38 +97,38 @@ class Mysql {
         } else {
             sql += "* "
         }
-        sql += " from " + table + " where ";
+        sql += " from " + table;
 
         if( (Object.keys(equal_condition).length === 0) && (Object.keys(like_condition).length === 0))
         {
-            sql += " 1=1";
-        } else
-        {
-            for(let i in equal_condition)
-            {
-                let type = typeof (equal_condition[i]);
-                if (type === "string" || type === "number")
-                {
-                    sql += i + " = " + mysql.escape(equal_condition[i]) + " and ";
-                } else{
-                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
-                }
-            }
-
-            for(let i in like_condition)
-            {
-                if (typeof (like_condition[i]) !== "string")
-                {
-                    throw new MysqlError(ERROR_MSG.mysql_condition_error);
-                }
-
-                let temp_sub_sql = "%" + like_condition[i].replace(/\\/g, "\\\\") + "%";
-                sql += i + " like " + mysql.escape(temp_sub_sql) + " and "; //sql
-            }
-
-            sql = sql.substr(0, sql.length - 5);
+            return sql;
         }
 
+        sql += " where ";
+
+        for(let i in equal_condition)
+        {
+            let type = typeof (equal_condition[i]);
+            if (type === "string" || type === "number")
+            {
+                sql += i + " = " + mysql.escape(equal_condition[i]) + " and ";
+            } else{
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
+            }
+        }
+
+        for(let i in like_condition)
+        {
+            if (typeof (like_condition[i]) !== "string")
+            {
+                throw new MysqlError(ERROR_MSG.mysql_condition_error);
+            }
+
+            let temp_sub_sql = "%" + like_condition[i].replace(/\\/g, "\\\\") + "%";
+            sql += i + " like " + mysql.escape(temp_sub_sql) + " and "; //sql
+        }
+
+        sql = sql.substr(0, sql.length - 5);
 
         return sql;
     };
