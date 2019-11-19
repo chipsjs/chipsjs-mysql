@@ -6,6 +6,15 @@
 # 安装步骤
 - npm install chipsjs-mysql
 
+# 需要深思的实践
+## dateformat问题
+- 例如数据库存的是dateformat格式,本来想http request 的body是 time_stamp = 2019-08-30 11:53:34；如果你输入 time_stamp = ‘2019-08-30 11:53:34’也会输出数据，原因是‘2019-08-30 11:53:34’在转换为dateformat格式中 转成了另一个时间而不是2019-08-30 11:53:34，是一个不安全的时间
+- 目前想到的做法是业务层去校验是否是dateformat格式，即
+```
+    let a = new Date("2019-01-01 01:01:01");
+    let b = new Date("'2019-01-01 01:01:01'");
+```
+
 # todo
 - 单元测试
 - 传对象到函数中,减少函数参数

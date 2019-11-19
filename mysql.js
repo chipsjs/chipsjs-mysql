@@ -171,6 +171,7 @@ class Mysql {
         return sql;
     };
 
+    //values不为空时有where;
     async commonExcute(sql_str, values = []) {
         this._log.debug("Mysql.commonExcute:sql is " + sql_str + ", values is " + values);
 
