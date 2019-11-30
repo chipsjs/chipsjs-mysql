@@ -1,7 +1,7 @@
 # 项目介绍
 - chipsjs-mysql is a promise-based Node.js ORM for MySQL.
 - 一个未成熟的orm,可以通过传日志模块自定义log,默认使用console.log
-- 请不要直接把param放入condition中，需要自己保证key的安全性
+- 请不要直接把param放入condition中，value避免了sql注入风险，但是需要自己保证key的安全性
 
 # 安装步骤
 - npm install chipsjs-mysql
