@@ -1,0 +1,16 @@
+version: '3.1'
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: chipsjs-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: chipsjs
+      # MYSQL_USER: chipsjs
+      # MYSQL_PASSWORD: chipspwd
+      MYSQL_DATABASE: test
+    ports:
+      - 3306:3306
