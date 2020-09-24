@@ -63,5 +63,13 @@ describe('insert', () => {
     });
   });
 
-  // escape or sql注入
+  describe('insertDB and get insert id', () => {
+    it('should have right id', async () => {
+      const id = await client.insertAndGetID(table.insert, {
+        c2: 'test',
+        c3: 1,
+      });
+      assert.isNumber(id);
+    });
+  });
 });
