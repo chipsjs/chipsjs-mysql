@@ -3,7 +3,7 @@ const Mysql = require('../index');
 
 let instance;
 
-const setUP = () => {
+const createInstance = () => {
   if (!instance) {
     instance = new Mysql({
       host: config.host,
@@ -22,9 +22,9 @@ const Table = {
   insert: 'insert',
 }
 
-exports.table = Table;
-exports.insertSetUp = async () => {
-  const client = setUP();
+module.exports.testTable = Table;
+module.exports.insertSetup = async () => {
+  const client = createInstance();
   await client.dropTable(Table.insert);
   await client.createTable(Table.insert, {
     c1: 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
@@ -36,8 +36,8 @@ exports.insertSetUp = async () => {
   return client;
 };
 
-exports.selectSetUp = async () => {
-  const client = setUP();
+module.exports.selectSetup = async () => {
+  const client = createInstance();
   await client.createTable(Table.select, {
     c1: 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
     c2: 'varchar(100)',

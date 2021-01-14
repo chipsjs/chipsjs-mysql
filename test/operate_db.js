@@ -1,16 +1,16 @@
 const { assert } = require('chai');
 
-const { insertSetUp, table } = require('./setup');
+const { insertSetup, testTable } = require('./setup');
 
 describe('insert', () => {
   let client;
 
   before('set up env', async () => {
-    client = await insertSetUp();
+    client = await insertSetup();
   });
 
   after('clean env', async () => {
-    await client.dropTable(table.insert);
+    await client.dropTable(testTable.insert);
   });
 
   describe('insertDB normal', () => {
@@ -18,12 +18,12 @@ describe('insert', () => {
     let result2;
 
     before('execute', async () => {
-      result1 = await client.insertDB(table.insert, {
+      result1 = await client.insertDB(testTable.insert, {
         c2: 'test',
         c3: 1,
       });
 
-      result2 = await client.selectDB(table.insert, {
+      result2 = await client.selectDB(testTable.insert, {
         c3: 1,
       })
     })
@@ -40,13 +40,13 @@ describe('insert', () => {
       let result4;
 
       before('execute', async () => {
-        result3 = await client.insertDB(table.insert, {
+        result3 = await client.insertDB(testTable.insert, {
           c1: 1,
           c2: 'test',
           c3: 1,
         }, true);
 
-        result4 = await client.selectDB(table.insert, {
+        result4 = await client.selectDB(testTable.insert, {
           c3: 1,
         })
       });
@@ -65,7 +65,7 @@ describe('insert', () => {
 
   describe('insertDB and get insert id', () => {
     it('should have right id', async () => {
-      const id = await client.insertAndGetID(table.insert, {
+      const id = await client.insertAndGetID(testTable.insert, {
         c2: 'test',
         c3: 1,
       });

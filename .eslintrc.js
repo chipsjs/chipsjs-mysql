@@ -1,9 +1,7 @@
 module.exports = {
   extends: [
-    'eslint:recommended',
     'airbnb-base',
     'plugin:jsdoc/recommended',
-    'plugin:mocha/recommended',
   ],
   env: {
     browser: true,
@@ -29,7 +27,6 @@ module.exports = {
     'no-restricted-syntax': 2,
     'linebreak-style': 0,
     'max-classes-per-file': ['error', 2],
-    'mocha/no-mocha-arrows': 'off',
     semi: 0,
     camelcase: 0,
   },
