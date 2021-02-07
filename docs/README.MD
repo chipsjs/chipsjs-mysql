@@ -4,4 +4,5 @@
 - npm run test
 
 ## todo
-- join
+- How to handle `joins`
+- add ut test
